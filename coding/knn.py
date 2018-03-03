@@ -29,7 +29,6 @@ knn1.fit(iris_train_X, iris_train_y)
 knn1.predict(iris_test_X)
 print (iris_test_y)
 
-
 # 方法二：拆分测试集和训练集
 np.random.seed(0)
 # permutation随机生成0-150的系列

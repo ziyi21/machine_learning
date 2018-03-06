@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-__author__ = '吕泽琴'
+__author__ = 'ziyi'
 # 计算画图模块和数据的导入
 import numpy as np
 import matplotlib.pyplot as plt

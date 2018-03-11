@@ -3,10 +3,11 @@
 __author__ = 'ziyi'
 import pandas as pd
 import numpy as np
-# 导入结巴分词的模块并且将自定义的字典加入其中
+# 导入结巴分词的模块
 import jieba
 from jieba import analyse
-jieba.load_userdict('factors_line.txt')
+# 导入统计词频的模块
+from collections import Counter
 
 # 根据分类构建用户自己的字典，
 def create_user_dict(filepath):
@@ -23,53 +24,79 @@ def create_user_dict(filepath):
 # 获取每篇财务报告的内容
 def cut_content(filepath,stopwords):
     contents = pd.read_excel(filepath)
-    print('数据的规模', contents.shape)
-    cut_report_results = []
+    # print('数据的规模', contents.shape)
+    all_cuts = []
+    # # 一家公司的切分流程
+    # cut_report_results = []
+    # cut_report_result = jieba.lcut(contents.iloc[2, 2], cut_all=False)  # lcut返回的是一个完整的列表cut_all=False 表示的精确切词
+    # # print(cut_report_result)
+    # for cut_word in cut_report_result:
+    #     if cut_word.strip() not in stopwords:
+    #         cut_report_results.append(cut_word)
+    # # print(cut_report_results)
+    # # 通过字典的形式保存统计得到的词频
+    # counts_results = dict(Counter(cut_report_results))
+    # # print(Counter(cut_report_results))
+    # # 返回公司的完整信息
+    # one_cut_results = [contents.iloc[2,0],contents.iloc[2,1],contents.iloc[2,2], cut_report_results, counts_results]
+    # # print(one_cut_results)
+    # return one_cut_results
+
+    # 所有公司的切分汇总
     for report_index in range(contents.shape[0]):
+        cut_report_results = []
+        cut_report_result = jieba.lcut(contents.iloc[report_index, 2], cut_all=False)  # lcut返回的是一个完整的列表cut_all=False 表示的精确切词
+        for cut_word in cut_report_result:
+            if cut_word.strip() not in stopwords:
+                cut_report_results.append(cut_word)
+        # 通过字典的形式保存统计得到的词频
+        counts_results = dict(Counter(cut_report_results))
+        # 返回一家公司的完整切分信息
+        one_cut_results = [contents.iloc[report_index, 0], contents.iloc[report_index, 1], contents.iloc[report_index, 2], cut_report_results,
+                           counts_results]
+        all_cuts.append(one_cut_results)
+    return all_cuts
 
-        cut_report_results.append([contents.iloc[report_index,0],contents.iloc[report_index, 1],contents.iloc[report_index, 2]])
-    print(cut_report_results[1:3])
-
+# 统计切分出的词语的分类情况
 def statistics_factors(filepath):
+    cuts_results = cut_content(content_filepath, stopwords)
+    # print(cuts_results)
     factors = pd.read_excel(filepath)
-    # print(all_factor)
-    # with open('factors.txt', 'w') as f:
-    #     f.write(repr(all_factor))  # 使用repr关键字将列表转化为原生的字符串
-    # all_factor.to_csv('xgboost.txt', header=True, index=False, sep='\t', mode='a')
+    # 获取因子表的列名
+    table_header = factors.columns.values.tolist()
+    all_company_header = ['公司股票代码','公司名称'] + table_header
+    all_company = []
 
-    #
-    # table1 = pd.read_excel(filepath, header=None)# 表示自动添加一行索引的表头，所有数据从第一行开始读取
-    # # table1 = table1.dropna() # 去掉有空值的行
-    # # table1 = table1.replace(0,np.nan)
-    # table1 = table1.fillna(0) # 替换空值的内容
-    # print('数据的规模',table1.shape)
-    # print('数据的前五条内容',table1.head(2))# 单个数字n表示获取前n条数据
-    # # print('',table.get('战略计划').dropNa) # 获取数据某一列的数据和介绍
-    # print('总的空值的个数',table1.isnull().sum().sum())
-    # # print('每列空值的个数', table.isnull().sum())
-    # print('获取某一列的值', table1.iloc[:,1])
-
-
-
-    # print(type(table))
-    # table1 = pd.read_excel(filepath, header=None)# 表示自动添加一行索引的表头，所有数据从第一行开始读取
-    # # table1 = table1.dropna() # 去掉有空值的行
-    # # table1 = table1.replace(0,np.nan)
-    # table1 = table1.fillna(0) # 替换空值的内容
-
-    # print('数据的前五条内容',table1.head(2))# 单个数字n表示获取前n条数据
-    # # print('',table.get('战略计划').dropNa) # 获取数据某一列的数据和介绍
-    # print('总的空值的个数',table.isnull().sum().sum())
-    # # print('每列空值的个数', table.isnull().sum())
-    # print('获取某一列的值', table.iloc[:,1])
+    for cuts_result in cuts_results:
+        # 从统计好的词频中获取
+        word = cuts_result[3]
+        dict = cuts_result[4]
+        factor_list = [cuts_result[0],cuts_result[1]]
+        for one_column_name in table_header:
+            factor_count = 0
+            every_factor = factors[one_column_name].dropna().values.tolist()
+            # print(every_factor)
+            for name in word:
+                if name in every_factor:
+                    factor_count = dict[name] + factor_count
+            # print(factor_count)
+            factor_list.append(factor_count)
+        all_company.append(factor_list)
+    print(all_company)
+    ############ 将数据保存到本地
+    pd.DataFrame(data=all_company).to_csv('company_factors.csv',header=all_company_header)
+    pd.DataFrame(data=cuts_results).to_csv('company_cutwords.csv', header=False)
 
 if __name__ == '__main__':
-    factors_filepath = r'C:\Users\Think\Desktop\content_analysis\linguistic_feature.xlsx'
-    content_filepath = r'C:\Users\Think\Desktop\content_analysis\mda.xlsx'
+    factors_filepath = r'linguistic_feature.xlsx'
+    content_filepath = r'mda.xlsx'
     # 创建用户自己的分词字典
     # create_user_dict(factors_filepath)
+    # 将自定义的分词字典加入结巴分词库
+    jieba.load_userdict('factors_line.txt')
     stopwords = [line.rstrip() for line in open('stopwords_gbk.txt', 'r')]
     # 使用自定义停用词集合
     analyse.set_stop_words("stopwords_utf-8.txt")
     # 切分文章内容
-    financial_content = cut_content(content_filepath, stopwords)
+    # cuts_result = cut_content(content_filepath, stopwords)
+    statistics_factors(factors_filepath)

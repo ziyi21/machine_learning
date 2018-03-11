@@ -3,5 +3,6 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/coding/factors.txt" charset="GBK" />
     <file url="file://$PROJECT_DIR$/coding/factors_line.txt" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/coding/stopwords_gbk.txt" charset="GBK" />
   </component>
 </project>

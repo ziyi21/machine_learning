@@ -75,11 +75,9 @@ def statistics_factors(filepath):
         for one_column_name in table_header:
             factor_count = 0
             every_factor = factors[one_column_name].dropna().values.tolist()
-            # print(every_factor)
             for name in word:
                 if name in every_factor:
                     factor_count = dict[name] + factor_count
-            # print(factor_count)
             factor_list.append(factor_count)
         all_company.append(factor_list)
     print(all_company)
@@ -91,12 +89,11 @@ if __name__ == '__main__':
     factors_filepath = r'linguistic_feature.xlsx'
     content_filepath = r'mda.xlsx'
     # 创建用户自己的分词字典
-    # create_user_dict(factors_filepath)
+    create_user_dict(factors_filepath)
     # 将自定义的分词字典加入结巴分词库
     jieba.load_userdict('factors_line.txt')
     stopwords = [line.rstrip() for line in open('stopwords_gbk.txt', 'r')]
     # 使用自定义停用词集合
     analyse.set_stop_words("stopwords_utf-8.txt")
     # 切分文章内容
-    # cuts_result = cut_content(content_filepath, stopwords)
     statistics_factors(factors_filepath)

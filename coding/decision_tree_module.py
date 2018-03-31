@@ -29,20 +29,15 @@ def getTrainSet():
 
 # 构建模型
 def tree_module(trainData,labels):
-    # data_columns,trainData, labels = getTrainSet()
-    # iris = yuanweiData()
     decision_tree = tree.DecisionTreeClassifier(max_depth=4)
     decision_tree_one = decision_tree.fit(trainData, labels)
-    # decision_tree_flower = decision_tree.fit(iris.data, iris.target)
     return decision_tree_one
 
 # 绘制决策树图
-
 def pic_tree(decision_tree,filename,columns,theclass,save_path):
     # 保存模型
     with open (filename, 'w') as f:
         f = tree.export_graphviz (decision_tree, out_file=f)
-
     dot_data = tree.export_graphviz (decision_tree, out_file=None, feature_names=columns,
                                      class_names=theclass, filled=True, rounded=True, special_characters=True)
     graph = pydotplus.graph_from_dot_data (dot_data)
